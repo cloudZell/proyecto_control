@@ -1,4 +1,43 @@
+# Dependencies
 node_modules/
+
+# Environment variables
 .env
-.DS_Store
+.env.local
+.env.production
+.env.development
+.env.render
+
+# Firebase credentials
+serviceAccountKey.json
+serviceAccountKey.json.json
+*-serviceAccountKey.json
+firebase-service-account.json
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build files
+dist/
+build/
+*.map
+
+# Temporary files
+tmp/
+temp/

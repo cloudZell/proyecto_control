@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escanear Asistencia - QR</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+    <style>
+        .scan-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .scan-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-xl);
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scan-title {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .scan-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            margin: 0 auto 1.5rem;
+            border: 3px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: var(--gray-100);
+            aspect-ratio: 1;
+        }
+
+        #video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .status-box {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-box.loading {
+            background: rgba(99, 102, 241, 0.1);
+            color: #a5b4fc;
+            border: 1px solid var(--primary-color);
+        }
+
+        .status-box.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #86efac;
+            border: 1px solid var(--success-color);
+        }
+
+        .status-box.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid var(--error-color);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(165, 180, 252, 0.3);
+            border-radius: 50%;
+            border-top-color: #a5b4fc;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.75rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: var(--gray-100);
+            border-radius: var(--border-radius);
+            font-size: 0.813rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .info ol {
+            text-align: left;
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .info li {
+            margin-bottom: 0.5rem;
+        }
+
+        .student-info {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: var(--border-radius);
+            display: none;
+            border: 1px solid var(--success-color);
+        }
+
+        .student-info.show {
+            display: block;
+        }
+
+        .student-info h3 {
+            color: var(--success-color);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .student-info p {
+            color: var(--text-secondary);
+            font-size: 0.813rem;
+            margin: 0.35rem 0;
+        }
+
+        .error-details {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--error-color);
+            font-size: 0.75rem;
+            color: #fca5a5;
+        }
+
+        button {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: var(--text-primary);
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            display: none;
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        button:disabled {
+            background: var(--gray-400);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--secondary-color);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            transition: var(--transition);
+            align-self: flex-start;
+            width: 100%;
+        }
+
+        .back-button:hover {
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-container">
+        <div class="scan-card">
+            <a href="/" class="back-button">
+                <i class="fas fa-arrow-left"></i>
+                Volver
+            </a>
+
+            <!-- Sección 1: Datos del Estudiante -->
+            <div id="studentDataSection">
+                <h1 class="scan-title">
+                    <i class="fas fa-user-graduate"></i>
+                    Tus Datos
+                </h1>
+                <p class="scan-subtitle">Ingresa tu información para marcar asistencia</p>
+
+                <div class="form-group">
+                    <label for="studentName">Nombre Completo *</label>
+                    <input type="text" id="studentName" placeholder="Ej: Juan Pérez" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="studentId">Número de Identificación *</label>
+                    <input type="text" id="studentId" placeholder="Ej: 123456789" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="studentEmail">Correo Electrónico *</label>
+                    <input type="email" id="studentEmail" placeholder="estudiante@email.com" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="studentPhone">Teléfono *</label>
+                    <input type="tel" id="studentPhone" placeholder="+57 300 123 4567" required />
+                </div>
+
+                <button id="submitDataBtn" onclick="saveStudentDataAndStartScanning()" class="btn-primary">
+                    <i class="fas fa-check"></i>
+                    Continuar
+                </button>
+
+                <div class="status" id="dataStatus"></div>
+            </div>
+
+            <!-- Sección 2: Escaneo de QR -->
+            <div id="scanSection" style="display: none;">
+                <h1 class="scan-title">
+                    <i class="fas fa-qrcode"></i>
+                    Marcar Asistencia
+                </h1>
+                <p class="scan-subtitle">Escanea el código QR del docente</p>
+
+                <div class="video-container">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                </div>
+
+                <div class="status-box loading" id="status">
+                    <span class="spinner"></span>
+                    <span>Inicializando cámara...</span>
+                </div>
+
+                <div class="student-info" id="studentInfo">
+                    <h3><i class="fas fa-check-circle"></i> Datos Registrados</h3>
+                    <p><strong>Nombre:</strong> <span id="studentNameDisplay">-</span></p>
+                    <p><strong>ID/Documento:</strong> <span id="studentIdDisplay">-</span></p>
+                    <p id="sessionInfo"></p>
+                </div>
+
+                <div class="info">
+                    <strong><i class="fas fa-info-circle"></i> Instrucciones:</strong>
+                    <ol>
+                        <li>Permite el acceso a la cámara</li>
+                        <li>Apunta la cámara al código QR</li>
+                        <li>Tu asistencia se registrará automáticamente</li>
+                    </ol>
+                </div>
+
+                <button id="retryBtn" onclick="location.reload()">Intentar de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--gray-100);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--gray-50);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary-color);
+            color: var(--text-primary);
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .status {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.875rem;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid var(--error-color);
+        }
+
+        .status.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #86efac;
+            border: 1px solid var(--success-color);
+        }
+    </style>
+
+    <script>
+        let sessionId = null;
+        let studentId = null;
+        let studentName = null;
+        let scanning = false;
+        let hasScanned = false;
+
+        // Guardar datos del estudiante
+        function saveStudentDataAndStartScanning() {
+            const name = document.getElementById("studentName").value.trim();
+            const id = document.getElementById("studentId").value.trim();
+            const email = document.getElementById("studentEmail").value.trim();
+            const phone = document.getElementById("studentPhone").value.trim();
+
+            if (!name || !id || !email || !phone) {
+                setStatus(document.getElementById("dataStatus"), "⚠️ Por favor completa todos los campos requeridos", "error");
+                return;
+            }
+
+            // Guardar en localStorage
+            localStorage.setItem("studentId", id);
+            localStorage.setItem("studentName", name);
+            if (email) localStorage.setItem("studentEmail", email);
+            if (phone) localStorage.setItem("studentPhone", phone);
+
+            // Guardar en variables globales
+            studentId = id;
+            studentName = name;
+
+            // Mostrar sección de escaneo
+            document.getElementById("studentDataSection").style.display = "none";
+            document.getElementById("scanSection").style.display = "block";
+
+            // Iniciar cámara
+            initializeCamera();
+        }
+
+        // Inicializar cámara
+        function initializeCamera() {
+            const video = document.getElementById("video");
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            const statusDiv = document.getElementById("status");
+
+            navigator.mediaDevices
+                .getUserMedia({
+                    video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+                })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.addEventListener("loadedmetadata", () => {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        setStatus(statusDiv, "Buscando código QR...", "loading");
+                        scanning = true;
+                        scanQR();
+                    });
+                })
+                .catch((err) => {
+                    console.error("Error de cámara:", err);
+                    setStatus(statusDiv, "❌ No se pudo acceder a la cámara", "error");
+                    document.getElementById("retryBtn").style.display = "block";
+                });
+
+            // Función para escanear QR
+            function scanQR() {
+                if (!scanning || !video.srcObject) return;
+
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imgData.data, imgData.width, imgData.height);
+
+                    if (code && !hasScanned) {
+                        hasScanned = true;
+                        scanning = false;
+                        // Extraer sessionId del QR
+                        const qrData = code.data;
+                        console.log("QR Data:", qrData);
+
+                        try {
+                            // Intentar parsear como URL completa
+                            let extractedSessionId = null;
+                            
+                            // Si es una URL completa (http://localhost:5000/scan?sessionId=xxx)
+                            if (qrData.startsWith('http://') || qrData.startsWith('https://')) {
+                                const url = new URL(qrData);
+                                extractedSessionId = url.searchParams.get("sessionId");
+                            } 
+                            // Si es URL relativa (/scan?sessionId=xxx)
+                            else if (qrData.includes('sessionId=')) {
+                                const urlParams = new URLSearchParams(qrData.split('?')[1]);
+                                extractedSessionId = urlParams.get("sessionId");
+                            }
+                            
+                            sessionId = extractedSessionId;
+                            console.log("Extracted Session ID:", sessionId);
+
+                            if (sessionId) {
+                                registerAttendance();
+                            } else {
+                                setStatus(statusDiv, "❌ QR no válido - sessionId no encontrado", "error");
+                                hasScanned = false;
+                                scanning = true;
+                                scanQR();
+                            }
+                        } catch (error) {
+                            console.error("Error parsing QR data:", error);
+                            setStatus(statusDiv, "❌ Error al procesar QR: " + error.message, "error");
+                            hasScanned = false;
+                            scanning = true;
+                            scanQR();
+                        }
+                        return;
+                    }
+                }
+                requestAnimationFrame(scanQR);
+            }
+        }
+
+        // Registrar asistencia
+        async function registerAttendance() {
+            const statusDiv = document.getElementById("status");
+            const studentInfoDiv = document.getElementById("studentInfo");
+
+            setStatus(statusDiv, "📤 Registrando asistencia...", "loading");
+
+            try {
+                const response = await fetch(`/api/sessions/${sessionId}/attendance`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        studentId: studentId,
+                        studentName: studentName,
+                        studentEmail: localStorage.getItem("studentEmail") || null,
+                        studentPhone: localStorage.getItem("studentPhone") || null,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || "Error al registrar asistencia");
+                }
+
+                setStatus(statusDiv, "✅ Asistencia registrada exitosamente", "success");
+
+                document.getElementById("studentNameDisplay").textContent = studentName;
+                document.getElementById("studentIdDisplay").textContent = studentId;
+                document.getElementById("sessionInfo").textContent = `Sesión: ${sessionId}`;
+                studentInfoDiv.classList.add("show");
+
+                document.getElementById("retryBtn").textContent = "Volver";
+                document.getElementById("retryBtn").onclick = () => (window.location.href = "/");
+                document.getElementById("retryBtn").style.display = "block";
+            } catch (error) {
+                console.error("Error:", error);
+                setStatus(statusDiv, `❌ ${error.message}`, "error");
+                hasScanned = false;
+                scanning = true;
+                document.getElementById("retryBtn").style.display = "block";
+            }
+        }
+
+        // Función auxiliar para mostrar estado
+        function setStatus(element, message, type) {
+            element.className = `status show ${type}`;
+            if (type === "loading") {
+                element.innerHTML = `<span class="spinner"></span><span>${message}</span>`;
+            } else {
+                element.innerHTML = message;
+            }
+        }
+
+        // Cargar datos guardados si existen
+        function loadSavedData() {
+            const savedName = localStorage.getItem("studentName");
+            const savedId = localStorage.getItem("studentId");
+            const savedEmail = localStorage.getItem("studentEmail");
+            const savedPhone = localStorage.getItem("studentPhone");
+
+            if (savedName) document.getElementById("studentName").value = savedName;
+            if (savedId) document.getElementById("studentId").value = savedId;
+            if (savedEmail) document.getElementById("studentEmail").value = savedEmail;
+            if (savedPhone) document.getElementById("studentPhone").value = savedPhone;
+        }
+
+        // Cargar datos al iniciar
+        loadSavedData();
+
+        // Limpiar cámara al descargar
+        window.addEventListener("unload", () => {
+            scanning = false;
+            const video = document.getElementById("video");
+            if (video && video.srcObject) {
+                video.srcObject.getTracks().forEach((track) => track.stop());
+            }
+        });
+    </script>      
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+    <script src="/scan-firebase.js"></script>
+</body>
+</html>

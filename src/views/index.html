@@ -45,7 +45,7 @@
                     <p>¿No tienes cuenta? <a href="#" onclick="showRegister()">Regístrate aquí</a></p>
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
                         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">¿Eres estudiante?</p>
-                        <a href="/student-dashboard" style="
+                        <a href="/scan" style="
                             display: inline-flex;
                             align-items: center;
                             gap: 0.5rem;
@@ -113,7 +113,7 @@
                     <p>¿Ya tienes cuenta? <a href="#" onclick="showLogin()">Inicia sesión aquí</a></p>
                     <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
                         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">¿Eres estudiante?</p>
-                        <a href="/student-dashboard" style="
+                        <a href="/scan" style="
                             display: inline-flex;
                             align-items: center;
                             gap: 0.5rem;
@@ -196,7 +196,10 @@
                         </div>
                         <div class="header-right">
                             <div class="date-time" id="dateTime"></div>
-                            <a id="generateQrBtn" href="/student" class="btn-secondary" style="margin-left:0.75rem; display:none; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:8px; text-decoration:none;">
+                            <a id="generateQrBtn" 
+                            href="/student" 
+                            class="btn-secondary" 
+                            style="display:flex; margin-left:0.75rem; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:8px; text-decoration:none;">
                                 <i class="fas fa-qrcode"></i>
                                 <span>Generar QR</span>
                             </a>
@@ -422,5 +425,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/script.js"></script>
+    <script src="/dashboard-firebase.js"></script>
 </body>
 </html>

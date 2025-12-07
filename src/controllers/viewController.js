@@ -16,6 +16,6 @@ function sendView(res, filename) {
 
 exports.getHome = (req, res) => sendView(res, 'index.html');
 exports.getStudent = (req, res) => sendView(res, 'student.html');
-exports.getStudentDashboard = (req, res) => sendView(res, 'student-dashboard.html');
+exports.getScan = (req, res) => sendView(res, 'scan.html');
 
 

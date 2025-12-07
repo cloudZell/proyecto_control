@@ -251,7 +251,8 @@ async function loadStudents() {
         }
         // If empty in Firebase, fallback to API
         try {
-            students = await apiFetch('/api/students');
+            const apiStudents = await apiFetch('/api/students');
+            students = Array.isArray(apiStudents) ? apiStudents : [];
         } catch (_) {
             students = [];
         }
@@ -259,10 +260,13 @@ async function loadStudents() {
     } catch (fbError) {
         console.error('Error loading students:', fbError);
         try {
-            students = await apiFetch('/api/students');
+            const apiStudents = await apiFetch('/api/students');
+            students = Array.isArray(apiStudents) ? apiStudents : [];
             renderStudents();
         } catch (apiErr) {
             console.error('Error loading students from API:', apiErr);
+            students = [];
+            renderStudents();
         }
     }
 }
@@ -284,7 +288,8 @@ async function loadCourses() {
         }
         // If empty in Firebase, fallback to API
         try {
-            courses = await apiFetch('/api/courses');
+            const apiCourses = await apiFetch('/api/courses');
+            courses = Array.isArray(apiCourses) ? apiCourses : [];
         } catch (_) {
             courses = [];
         }
@@ -293,11 +298,15 @@ async function loadCourses() {
     } catch (fbError) {
         console.error('Error loading courses:', fbError);
         try {
-            courses = await apiFetch('/api/courses');
+            const apiCourses = await apiFetch('/api/courses');
+            courses = Array.isArray(apiCourses) ? apiCourses : [];
             renderCourses();
             updateCourseSelect();
         } catch (apiErr) {
             console.error('Error loading courses from API:', apiErr);
+            courses = [];
+            renderCourses();
+            updateCourseSelect();
         }
     }
 }
@@ -306,7 +315,8 @@ async function loadCourses() {
 async function loadAttendanceRecords() {
     try {
         // Try API all attendance
-        attendanceRecords = await apiFetch('/api/attendance');
+        const apiAttendance = await apiFetch('/api/attendance');
+        attendanceRecords = Array.isArray(apiAttendance) ? apiAttendance : [];
         renderAttendanceCalendar();
     } catch (error) {
         try {
@@ -321,6 +331,8 @@ async function loadAttendanceRecords() {
             renderAttendanceCalendar();
         } catch (fbError) {
             console.error('Error loading attendance records:', fbError);
+            attendanceRecords = [];
+            renderAttendanceCalendar();
         }
     }
 }

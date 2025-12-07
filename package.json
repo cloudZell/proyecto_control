@@ -4,13 +4,17 @@
   "description": "",
   "main": "script.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "prepare-env": "node scripts/prepare-env.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "expres": "^0.0.5",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "uuid": "^9.0.1",
+    "firebase-admin": "^12.0.0",
+    "dotenv": "^16.4.5"
   }
 }
